@@ -1,5 +1,6 @@
 import pandas as pd
 import traceback
+from openpyxl.styles import Alignment
 
 def remove_timestamps():
     try:
@@ -34,11 +35,18 @@ def remove_timestamps():
         # Update the Note sheet in the original excel_file dictionary
         excel_file['Note'] = df_modified
         
-        # Save all sheets to the new Excel file
+        # Save all sheets to the new Excel file with right alignment for column B
         print("Saving modified Excel file...")
-        with pd.ExcelWriter('migrationdata_times_removed.xlsx') as writer:
+        with pd.ExcelWriter('migrationdata_times_removed.xlsx', engine='openpyxl') as writer:
             for sheet_name, sheet_df in excel_file.items():
                 sheet_df.to_excel(writer, sheet_name=sheet_name, index=False)
+                
+                # Apply right alignment to column B in the Note sheet
+                if sheet_name == 'Note':
+                    worksheet = writer.sheets[sheet_name]
+                    for row in worksheet.iter_rows(min_row=2, min_col=2, max_col=2):  # Column B
+                        for cell in row:
+                            cell.alignment = Alignment(horizontal='right')
         
         print("Excel file has been processed successfully!")
         
